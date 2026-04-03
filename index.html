@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Assortment Planning Framework</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#0f1117;--card:#161820;--border:#2a2d3a;--text:#e8e6e0;--sub:#8a8c9a;--muted:#4a4d5a;--blue:#7eb8f7;--bluebg:#1e2d4a;--teal:#5ecfad;--tealbg:#152e28;--amber:#f0a832;--amberbg:#2e1e08;--coral:#e87a52;--coralbg:#2e120a;--purple:#a88ae8;--purplebg:#201638;--green:#7ab842;--greenbg:#152210;--pink:#e87aaa;--pinkbg:#2e1220;--gray:#a0a2b0;--graybg:#1e2028;--grid:#2a2d3a;--axis:#3a3d4a;--lbl:#5a5d6a;--dot:#0f1117;}
+body.light{--bg:#f4f5f9;--card:#ffffff;--border:#e0e2ea;--text:#1a1c24;--sub:#5a5d72;--muted:#9a9db0;--blue:#1a6bb5;--bluebg:#ddeeff;--teal:#0e7a58;--tealbg:#d4f4e8;--amber:#a0620a;--amberbg:#fef3d8;--coral:#b84020;--coralbg:#fde8e0;--purple:#6040b8;--purplebg:#ede8fd;--green:#3a7010;--greenbg:#e8f5d8;--pink:#a03060;--pinkbg:#fde8f0;--gray:#505270;--graybg:#eaebf0;--grid:#e0e2ea;--axis:#c0c2cc;--lbl:#9a9db0;--dot:#f4f5f9;}
+html,body{background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);overflow-x:hidden;}
+.hdr{background:var(--card);border-bottom:1px solid var(--border);padding:12px 80px 10px 16px;}
+.hdr-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.hdr-sub{font-size:10px;color:var(--sub);}
+.hdr-sig{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.theme-btn{position:fixed;top:12px;right:12px;z-index:999;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:5px 11px;font-size:11px;color:var(--sub);cursor:pointer;font-family:inherit;}
+.tab-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:90;}
+.dots{display:flex;gap:6px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:all .3s;}
+.dot.on{width:20px;border-radius:3px;background:var(--blue);}
+.tab-lbl{font-size:12px;color:var(--sub);font-weight:500;}
+.swipe-hint{font-size:10px;color:var(--muted);}
+.swipe-wrap{width:100%;overflow:hidden;}
+.swipe-track{display:flex;transition:transform .35s cubic-bezier(.25,.46,.45,.94);}
+.page{flex:0 0 100%;width:100%;padding:12px 12px 90px;}
+.flow{display:flex;flex-direction:column;align-items:center;}
+.frow{display:flex;gap:8px;width:100%;justify-content:center;}
+.farrow{color:var(--muted);font-size:14px;padding:3px 0;text-align:center;}
+.fbox{flex:1;max-width:180px;border-radius:10px;padding:10px;border:1px solid transparent;text-align:center;}
+.ft{font-size:12px;font-weight:500;margin-bottom:2px;line-height:1.3;}
+.fs{font-size:10px;color:var(--sub);line-height:1.3;}
+.fbox.bl{background:var(--bluebg);border-color:#3d5a9a;} .fbox.bl .ft{color:var(--blue);}
+.fbox.tl{background:var(--tealbg);border-color:#2a6054;} .fbox.tl .ft{color:var(--teal);}
+.fbox.am{background:var(--amberbg);border-color:#6b4e1a;} .fbox.am .ft{color:var(--amber);}
+.fbox.co{background:var(--coralbg);border-color:#6b2e1a;} .fbox.co .ft{color:var(--coral);}
+.fbox.pu{background:var(--purplebg);border-color:#4d3580;} .fbox.pu .ft{color:var(--purple);}
+.fbox.gr{background:var(--greenbg);border-color:#2e5018;} .fbox.gr .ft{color:var(--green);}
+.fbox.pk{background:var(--pinkbg);border-color:#6b2a40;} .fbox.pk .ft{color:var(--pink);}
+.fbox.gy{background:var(--graybg);border-color:#3a3d4a;} .fbox.gy .ft{color:var(--gray);}
+.acc{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.acc-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.acc-num{width:26px;height:26px;border-radius:50%;background:var(--border);font-size:12px;font-weight:600;color:var(--sub);text-align:center;line-height:26px;flex-shrink:0;}
+.acc-name{flex:1;font-size:14px;font-weight:500;color:var(--text);}
+.acc-chev{font-size:12px;color:var(--muted);transition:transform .25s;flex-shrink:0;}
+.acc-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border);}
+.acc-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;margin:10px 0 8px;}
+.td{background:#1a2d4a;color:var(--blue);}.tm{background:#2e1e08;color:var(--amber);}.ta{background:#1a2e10;color:var(--green);}.tr{background:#2e0e18;color:var(--pink);}
+.acc-desc{font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:8px;}
+.acc-list{list-style:none;margin-bottom:8px;}
+.acc-list li{font-size:11px;color:var(--muted);padding:2px 0 2px 12px;position:relative;line-height:1.5;}
+.acc-list li::before{content:'';position:absolute;left:0;top:8px;width:3px;height:3px;border-radius:50%;background:var(--border);}
+.ml{font-size:10px;color:var(--muted);margin:8px 0 4px;font-weight:500;}
+.tw{overflow-x:auto;border-radius:6px;border:1px solid var(--border);}
+table.dt{border-collapse:collapse;background:var(--bg);font-size:10px;white-space:nowrap;width:100%;}
+table.dt th{padding:5px 8px;color:var(--lbl);font-weight:500;border-bottom:1px solid var(--border);background:var(--card);text-align:left;}
+table.dt td{padding:4px 8px;color:var(--sub);border-bottom:1px solid var(--bg);}
+table.dt tr:last-child td{border-bottom:none;}
+.kvi{color:var(--blue);font-weight:600;}.act{color:var(--green);}.ina{color:var(--amber);}.del{color:var(--coral);}.blk{color:#e24b4a;background:#1a0808;text-align:center;font-weight:600;}.num{text-align:center;}
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.pill{padding:6px 12px;font-size:11px;border:1px solid var(--border);border-radius:20px;background:none;color:var(--muted);cursor:pointer;font-family:inherit;}
+.pill.on{background:var(--card);border-color:#4a4d6a;color:var(--text);font-weight:500;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.chart-title{font-size:13px;font-weight:500;color:var(--sub);margin-bottom:10px;}
+.chart-svg{width:100%;display:block;}
+.cleg{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;}
+.cleg-i{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--sub);}
+.cleg-d{width:12px;height:4px;border-radius:2px;flex-shrink:0;}
+.insight{padding:10px 12px;background:var(--bg);border-radius:8px;border-left:3px solid #2a3d5a;font-size:11px;color:var(--sub);line-height:1.7;}
+.ben{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;}
+.bnum{font-size:26px;font-weight:600;min-width:38px;line-height:1;}
+.btitle{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.bdesc{font-size:11px;color:var(--muted);line-height:1.6;}
+.sig{margin-top:16px;padding:8px 0;border-top:1px solid var(--border);}
+.sig-line{font-size:9px;color:var(--muted);line-height:1.6;}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;}
+.nb{flex:1;padding:11px 4px;border:none;background:none;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-family:inherit;}
+.nb.on{color:var(--blue);}
+.nb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+</head>
+<body>
+
+<button class="theme-btn" id="themeBtn" onclick="toggleTheme()">&#9790; Dark</button>
+
+<div class="hdr">
+  <div class="hdr-title">Assortment Planning Framework</div>
+  <div class="hdr-sub">Personal Care Division &mdash; United Pharmaceuticals Company</div>
+  <div class="hdr-sig">Developed by: Khalid Al-Mohammady &middot; Sr. Manager Personal Care Division &middot; CPCM &middot; CPSA &middot; CIPM &middot; GPI Ambassador</div>
+</div>
+
+<div class="tab-bar">
+  <div class="dots">
+    <div class="dot on" id="d0"></div><div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
+  </div>
+  <div class="tab-lbl" id="tlbl">Overview</div>
+  <div class="swipe-hint">&#8592; swipe &#8594;</div>
+</div>
+
+<div class="swipe-wrap" id="sw">
+<div class="swipe-track" id="st">
+
+<div class="page">
+  <div class="flow">
+    <div class="frow"><div class="fbox bl"><div class="ft">Foundation concept</div><div class="fs">Assortment = MDQ + Forecast + Shelf Space</div></div></div>
+    <div class="farrow">&#8595;</div>
+    <div class="frow"><div class="fbox tl"><div class="ft">Step 1 &mdash; Data cleansing</div><div class="fs">Stores + Items (Active / Inactive / Delist)</div></div></div>
+    <div class="farrow">&#8595;</div>
+    <div class="frow">
+      <div class="fbox am"><div class="ft">Step 2 &mdash; Item classification</div><div class="fs">KVI / A-D / N / PA-PD</div></div>
+      <div class="fbox co"><div class="ft">Step 3 &mdash; Store clustering</div><div class="fs">Super / A-D / PA-PC / Haram</div></div>
+    </div>
+    <div class="farrow">&#8595;</div>
+    <div class="frow"><div class="fbox pu"><div class="ft">Step 4 &mdash; Segmentation (CDT)</div><div class="fs">Segments &#8594; smallest segment</div></div></div>
+    <div class="farrow">&#8595;</div>
+    <div class="frow">
+      <div class="fbox tl"><div class="ft">Step 5A &mdash; Width matrix</div><div class="fs">No. of SKUs x Cluster</div></div>
+      <div class="fbox gr"><div class="ft">Step 5B &mdash; Depth matrix</div><div class="fs">Qty per SKU x Cluster</div></div>
+    </div>
+    <div class="farrow">&#8595;</div>
+    <div class="frow"><div class="fbox bl"><div class="ft">Step 6 &mdash; Technicality query</div><div class="fs">Unpivot + Automation &#8594; Final plan</div></div></div>
+    <div class="farrow">&#8595;</div>
+    <div class="frow">
+      <div class="fbox pk"><div class="ft">Step 7 &mdash; Final review</div><div class="fs">Category Manager decisions</div></div>
+      <div class="fbox gy"><div class="ft">Step 8 &mdash; Grouping</div><div class="fs">Distribution plan ready</div></div>
+    </div>
+    <p style="font-size:10px;color:var(--muted);margin-top:10px;text-align:center;">Swipe left for step details &#8594;</p>
+  </div>
+  <div class="sig"><div class="sig-line">&#169; Khalid Al-Mohammady &middot; Assortment Planning Framework &middot; Personal Care Division</div><div class="sig-line">United Pharmaceuticals Company &middot; Saudi Arabia &middot; 2025</div></div>
+</div>
+
+<div class="page"><div id="acc-list"></div><div class="sig"><div class="sig-line">&#169; Khalid Al-Mohammady &middot; CPCM &middot; CPSA &middot; CIPM &middot; GPI Ambassador</div><div class="sig-line">United Pharmaceuticals Company &middot; Personal Care Division &middot; 2025</div></div></div>
+
+<div class="page">
+  <div class="pills">
+    <button class="pill on" onclick="showC(0)">Inventory</button>
+    <button class="pill" onclick="showC(1)">Availability</button>
+    <button class="pill" onclick="showC(2)">Working Capital</button>
+    <button class="pill" onclick="showC(3)">Store vs Assortment</button>
+    <button class="pill" onclick="showC(4)">Sales Growth</button>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title" id="ctitle">Inventory vs Time</div>
+    <svg class="chart-svg" id="csvg" viewBox="0 0 320 180"></svg>
+  </div>
+  <div class="cleg" id="cleg"></div>
+  <div class="insight" id="cins"></div>
+  <div class="sig" style="margin-top:12px"><div class="sig-line">&#169; Khalid Al-Mohammady &middot; Assortment Planning Framework</div><div class="sig-line">United Pharmaceuticals Company &middot; Personal Care Division &middot; 2025</div></div>
+</div>
+
+<div class="page"><div id="ben-list"></div><div class="sig"><div class="sig-line">&#169; Khalid Al-Mohammady &middot; CPCM &middot; CPSA &middot; CIPM &middot; GPI Ambassador</div><div class="sig-line">United Pharmaceuticals Company &middot; Personal Care Division &middot; 2025</div></div></div>
+
+</div>
+</div>
+
+<div class="bnav">
+  <button class="nb on" id="bn0" onclick="goTo(0)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>Overview</button>
+  <button class="nb" id="bn1" onclick="goTo(1)"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>8 Steps</button>
+  <button class="nb" id="bn2" onclick="goTo(2)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Output</button>
+  <button class="nb" id="bn3" onclick="goTo(3)"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Benefits</button>
+</div>
+
+<script>
+window.onerror=function(msg,src,line,col,err){
+  // Prevent white screen - just log silently
+  return true;
+};
+window.addEventListener('unhandledrejection',function(e){e.preventDefault();});
+</script>
+<script>
+// THEME
+function saveTheme(v){try{localStorage.setItem('apf',v);}catch(e){}}
+function loadTheme(){try{return localStorage.getItem('apf');}catch(e){return null;}}
+function toggleTheme(){
+  var l=document.body.classList.toggle('light');
+  document.getElementById('themeBtn').innerHTML=l?'&#9728; Light':'&#9790; Dark';
+  saveTheme(l?'1':'0');
+  if(activeC!==null)showC(activeC);
+}
+if(loadTheme()==='1'){document.body.classList.add('light');document.getElementById('themeBtn').innerHTML='&#9728; Light';}
+
+// SWIPE — separates horizontal drag from vertical scroll and taps
+var cur=0,N=4,sw=document.getElementById('sw'),st=document.getElementById('st');
+var names=['Overview','8 Steps','Output','Benefits'];
+var tx,ty,t0,active=false,horiz=false,locked=false;
+
+function onStart(cx,cy){tx=cx;ty=cy;t0=Date.now();active=true;horiz=false;locked=false;st.style.transition='none';}
+function onMove(cx,cy,e){
+  if(!active||locked)return;
+  var dx=cx-tx,dy=cy-ty;
+  if(!horiz){
+    if(Math.abs(dx)<6&&Math.abs(dy)<6)return;
+    if(Math.abs(dy)>=Math.abs(dx)){locked=true;st.style.transition='';goTo(cur);return;}
+    horiz=true;
+  }
+  if(e)e.preventDefault();
+  st.style.transform='translateX(calc(-'+cur*100+'% + '+dx+'px))';
+}
+function onEnd(cx){
+  if(!active){return;}active=false;st.style.transition='';
+  if(!horiz||locked){goTo(cur);return;}
+  var dx=cx-tx,dt=Date.now()-t0;
+  var ok=Math.abs(dx)>55||(Math.abs(dx)>25&&dt<300);
+  if(ok&&dx<0&&cur<N-1)goTo(cur+1);
+  else if(ok&&dx>0&&cur>0)goTo(cur-1);
+  else goTo(cur);
+}
+sw.addEventListener('touchstart',function(e){try{onStart(e.touches[0].clientX,e.touches[0].clientY);}catch(err){}},{passive:true});
+sw.addEventListener('touchmove',function(e){try{onMove(e.touches[0].clientX,e.touches[0].clientY,horiz?e:null);}catch(err){}},{passive:false});
+sw.addEventListener('touchend',function(e){try{onEnd(e.changedTouches[0].clientX);}catch(err){}},{passive:true});
+sw.addEventListener('touchcancel',function(){active=false;locked=false;st.style.transition='';goTo(cur);},{passive:true});
+
+function goTo(i){
+  cur=i;st.style.transform='translateX(-'+i*25+'%)';
+  for(var j=0;j<N;j++){document.getElementById('bn'+j).classList.toggle('on',j===i);document.getElementById('d'+j).classList.toggle('on',j===i);}
+  document.getElementById('tlbl').textContent=names[i];
+  window.scrollTo(0,0);
+  if(i===2&&activeC===null)showC(0);
+}
+
+// TABLES
+function tbl(hdr,rows){
+  var s='<div class="tw"><table class="dt"><thead><tr>'+hdr.map(function(h){return '<th>'+h+'</th>';}).join('')+'</tr></thead><tbody>';
+  rows.forEach(function(r){
+    s+='<tr>'+r.map(function(c,i){
+      var cl='';
+      if(c==='KVI')cl='kvi';else if(c==='Active')cl='act';else if(c==='Inactive')cl='ina';else if(c==='Delisted')cl='del';else if(c==='0')cl='blk';else if(i>=2&&!isNaN(c)&&c!=='')cl='num';
+      return '<td class="'+cl+'">'+c+'</td>';
+    }).join('')+'</tr>';
+  });
+  return s+'</tbody></table></div>';
+}
+var MK={
+  1:'<div class="ml">Stores sheet</div>'+tbl(['Store ID','Status','Channel','Cluster','Space'],[['P001','Active','General','A','Large'],['P002','Active','Haram','Haram A','Medium'],['P003','Inactive','Provider','Provider B','Small']])+'<div class="ml" style="margin-top:10px">Items sheet</div>'+tbl(['Material','Brand','Status','Pack','RSP','ROS','Class'],[['207102','Brand A','Active','100ml','24.5','2.3','A'],['207103','Brand B','Active','200ml','45.0','1.8','KVI'],['208475','Brand C','Inactive','50ml','12.0','0.4','D'],['211829','Brand D','Delisted','75ml','18.5','0.1','D']]),
+  2:tbl(['Category','SKU','Class','Pack','Price','Total','Rank'],[['Breath Fresh.','207101','KVI','3','4','7','1'],['Breath Fresh.','207102','A','4','3','7','2'],['Natural TP','805385','A','3','2','5','3'],['Manual TB','5E+06','B','5','4','9','1'],['Regular TP','3E+06','C','2','1','3','8']]),
+  3:tbl(['Count','Cluster'],[['50','Super'],['102','A'],['116','B'],['81','C'],['93','D'],['4','NEW'],['4','Provider A'],['6','Provider B'],['3','Provider C'],['3','Haram A'],['4','Haram B']]),
+  5:'<div class="ml">Width matrix</div>'+tbl(['Category','Class','S','A','B','C','D','PA','PB'],[['Breath Fresh.','KVI','2','2','2','2','2','2','2'],['Breath Fresh.','A','17','16','11','6','15','14','9'],['Breath Fresh.','B','10','9','8','6','0','9','8'],['Breath Fresh.','C','8','8','7','0','0','0','0'],['Breath Fresh.','D','3','3','0','0','0','0','0']])+'<div class="ml" style="margin-top:10px">Depth matrix</div>'+tbl(['Category','Class','S','A','B','C','D','PA','PB'],[['Breath Fresh.','KVI','6','4','3','2','2','4','3'],['Breath Fresh.','A','4','3','2','2','2','3','2'],['Breath Fresh.','B','3','2','2','2','0','2','2'],['Breath Fresh.','C','2','2','2','0','0','0','0'],['Breath Fresh.','D','2','2','0','0','0','0','0']]),
+  6:tbl(['Category','Cluster','Class','SKU','Cost','Units','Line Cost'],[['Breath Fresh.','A','KVI','207101','13.45','4','53.80'],['Breath Fresh.','A','A','207102','13.45','3','40.35'],['Breath Fresh.','B','KVI','207101','13.45','3','40.35'],['Breath Fresh.','B','B','211829','9.63','2','19.26']]),
+  7:tbl(['Cluster','Class','Store','SKU','Cost','Units','Line Cost'],[['A','A','P002','207102','13.45','3','40.35'],['A','KVI','P005','207101','13.45','4','53.80'],['B','B','P007','211829','9.63','2','19.26'],['B','A','P007','207102','13.45','3','40.35']])
+};
+
+// ACCORDION — simple display toggle, no class dependency
+var steps=[
+  {n:1,t:'Data cleansing',tag:'Data prep',tc:'td',d:'Clean and classify data in two foundational sheets before any further work.',items:['Stores: space, location, Sales per sub-category, channel (General / Provider / Haram / Online)','Items: CDT, Attributes (Pack size, Price tier, Channel, Item importance)','Item status: Active / Inactive (Liquidation or Action plan) / Delisted','Columns: Material class, Brand, MSL, RSP, Margin, Store Sold, ROS, Final Class, Rank per segment'],mk:1},
+  {n:2,t:'Item classification',tag:'Manual + Scoring',tc:'tm',d:'Classify each SKU using a scoring model covering Pack size, Price, and sales performance.',items:['Classes: KVI - A - B - C - D - N - PA - PB - PC - PD','Pack size score + Price score => Final class score => Rank per segment','Normality test on clusters (chart or statistical formula)'],mk:2},
+  {n:3,t:'Store clustering',tag:'Category level',tc:'td',d:'Clustering at category level - each SKU gets the best chance to sell where it matters most.',items:['Clusters: Super (50) - A (102) - B (116) - C (81) - D (93)','N (4) - Provider A/B/C - Haram A (3) - Haram B (4)','Considers ALL attributes: space, sales, channel, location, category performance','Example: Hair oil => cluster with highest Hair Care performance'],mk:3},
+  {n:4,t:'Segmentation via CDT',tag:'Strategic',tc:'tm',d:'Define segments based on Customer Decision Tree and focus on the smallest segment.',items:['Build a clear Customer Decision Tree for the category','Segment all SKUs based on CDT attributes','Focus on the smallest segment for maximum precision','Align with Company main strategy and Category role'],mk:null},
+  {n:5,t:'Range matrix (Width + Depth)',tag:'Manual matrix',tc:'tm',d:'Two manual matrices define the number of SKUs and quantities per Cluster.',items:['Width matrix: no. of SKUs per Class x Cluster (e.g. KVI in Super = 6)','Depth matrix: quantity per SKU per Cluster (e.g. KVI in Super = 6 units)','Red = Blocked (0) - White = Allowed','Reflects Category role and commercial strategy'],mk:5},
+  {n:6,t:'Technicality query',tag:'Automated',tc:'ta',d:'Unpivot the matrix + automation query generates the complete Final Plan.',items:['Unpivot table from wide to long format','Query links: Items x Stores x Clusters x Classes x Quantities','Output: Category | Cluster | Class | Store ID | SKU | Cost | Units | Line Cost'],mk:6},
+  {n:7,t:'Final review',tag:'Decision',tc:'tr',d:'Category Manager reviews each SKU and makes final decisions.',items:['SKU-level review per cluster','Confirm blocked combinations','Override decisions for exceptions','Every decision is documented - Audit trail'],mk:7},
+  {n:8,t:'Grouping',tag:'Final output',tc:'ta',d:'Final grouping and distribution - the deliverable ready for execution.',items:['Group SKUs for distribution','Final distribution plan per store','Ready for Execution and Follow-up'],mk:null}
+];
+
+var bodies=[];
+var al=document.getElementById('acc-list');
+steps.forEach(function(s,idx){
+  var wrap=document.createElement('div');wrap.className='acc';
+  var bodyHtml='<div class="acc-body"><span class="acc-tag '+s.tc+'">'+s.tag+'</span><p class="acc-desc">'+s.d+'</p><ul class="acc-list">'+s.items.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ul>'+(s.mk?MK[s.mk]:'')+'</div>';
+  wrap.innerHTML='<div class="acc-hdr"><div class="acc-num">'+s.n+'</div><div class="acc-name">'+s.t+'</div><span class="acc-chev">&#9660;</span></div>'+bodyHtml;
+  var hdr=wrap.querySelector('.acc-hdr');
+  var body=wrap.querySelector('.acc-body');
+  var chev=wrap.querySelector('.acc-chev');
+  bodies.push(body);
+  hdr.addEventListener('click',function(e){
+    e.stopPropagation();
+    var isOpen=(body.style.display==='block');
+    // close all
+    bodies.forEach(function(b,i){
+      b.style.display='none';
+      al.querySelectorAll('.acc-chev')[i].style.transform='';
+    });
+    // open this one
+    if(!isOpen){
+      body.style.display='block';
+      chev.style.transform='rotate(180deg)';
+      setTimeout(function(){wrap.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
+    }
+  });
+  al.appendChild(wrap);
+});
+
+// BENEFITS
+var bcs=['#5ecfad','#7eb8f7','#7ab842','#f0a832','#a88ae8','#e87a52'];
+[{n:'01',t:'Clear framework',d:'Defined steps with a tangible output - any team member can execute it.'},
+ {n:'02',t:'More controllable',d:'Know exactly where to adjust inventory and see the result immediately.'},
+ {n:'03',t:'Time saver',d:'Automation query eliminates hours of manual work per cycle.'},
+ {n:'04',t:'Scalable',d:'Same framework applies to any category without starting from scratch.'},
+ {n:'05',t:'Audit trail',d:'Every decision is documented - why each SKU was placed in each cluster.'},
+ {n:'06',t:'Negotiation power',d:'Data-backed conversations with suppliers - not gut feeling.'}
+].forEach(function(b,i){
+  var c=document.createElement('div');c.className='ben';
+  c.innerHTML='<div class="bnum" style="color:'+bcs[i]+'">'+b.n+'</div><div><div class="btitle">'+b.t+'</div><div class="bdesc">'+b.d+'</div></div>';
+  document.getElementById('ben-list').appendChild(c);
+});
+
+// CHARTS
+var activeC=null;
+var VW=320,VH=180,PL=38,PR=8,PT=10,PB=26,CW=VW-PL-PR,CH=VH-PT-PB;
+function pts(d,mn,mx){return d.map(function(v,i){return {x:PL+(i/(d.length-1))*CW,y:PT+CH-(((v-mn)/(mx-mn))*CH)};});}
+function crv(d,mn,mx){var p=pts(d,mn,mx),s='M'+p[0].x.toFixed(1)+','+p[0].y.toFixed(1);for(var i=1;i<p.length;i++){var x0=p[i-1].x,y0=p[i-1].y,x1=p[i].x,y1=p[i].y;s+=' C'+(x0+(x1-x0)*0.4).toFixed(1)+','+y0.toFixed(1)+' '+(x0+(x1-x0)*0.6).toFixed(1)+','+y1.toFixed(1)+' '+x1.toFixed(1)+','+y1.toFixed(1);}return {path:s,pts:p};}
+function draw(def){
+  var lt=document.body.classList.contains('light');
+  var g=lt?'#e0e2ea':'#2a2d3a',lb=lt?'#9a9db0':'#5a5d6a',ax=lt?'#c0c2cc':'#3a3d4a',dt=lt?'#f4f5f9':'#0f1117';
+  var s='';
+  [0,0.25,0.5,0.75,1].forEach(function(t){var y=(PT+CH*(1-t)).toFixed(1),v=Math.round(def.mn+(def.mx-def.mn)*t);s+='<line x1="'+PL+'" y1="'+y+'" x2="'+(VW-PR)+'" y2="'+y+'" stroke="'+g+'" stroke-width="0.5"/><text x="'+(PL-4)+'" y="'+y+'" text-anchor="end" dominant-baseline="central" font-size="9" fill="'+lb+'">'+v+'</text>';});
+  def.labels.forEach(function(l,i){var x=(PL+(i/(def.labels.length-1))*CW).toFixed(1);s+='<text x="'+x+'" y="'+(VH-5)+'" text-anchor="middle" font-size="9" fill="'+lb+'">'+l+'</text>';});
+  s+='<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(PT+CH)+'" stroke="'+ax+'" stroke-width="0.8"/><line x1="'+PL+'" y1="'+(PT+CH)+'" x2="'+(VW-PR)+'" y2="'+(PT+CH)+'" stroke="'+ax+'" stroke-width="0.8"/>';
+  var c1=crv(def.d,def.mn,def.mx);
+  s+='<path d="'+c1.path+' L'+c1.pts[c1.pts.length-1].x+','+(PT+CH)+' L'+PL+','+(PT+CH)+' Z" fill="'+def.f+'" stroke="none"/>';
+  s+='<path d="'+c1.path+'" fill="none" stroke="'+def.c+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  c1.pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="'+def.c+'" stroke="'+dt+'" stroke-width="1.5"/>';});
+  if(def.d2){var c2=crv(def.d2,def.mn,def.mx);s+='<path d="'+c2.path+' L'+c2.pts[c2.pts.length-1].x+','+(PT+CH)+' L'+PL+','+(PT+CH)+' Z" fill="'+def.f2+'" stroke="none"/><path d="'+c2.path+'" fill="none" stroke="'+def.c2+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6,3"/>';c2.pts.forEach(function(p){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="'+def.c2+'" stroke="'+dt+'" stroke-width="1.5"/>';});}
+  return s;
+}
+var cdefs=[
+  {title:'Inventory vs Time',labels:['M0','M1','M2','M3','M4','M5','M6','M7','M8'],d:[60,100,130,115,90,70,55,50,52],mn:0,mx:150,c:'#378ADD',f:'rgba(55,138,221,0.15)',leg:[{c:'#378ADD',l:'Inventory level (000 units)'}],ins:'Figure-8 curve - rises during plan execution, then drops with Reallocation and Liquidation.'},
+  {title:'Availability vs Time',labels:['M0','M1','M2','M3','M4','M5','M6','M7','M8'],d:[85,80,70,62,58,65,74,82,88],mn:40,mx:100,c:'#E24B4A',f:'rgba(226,75,74,0.15)',leg:[{c:'#E24B4A',l:'Availability %'}],ins:'Dips temporarily as SKUs are redistributed. Recovers once new purchasing and reallocation are complete.'},
+  {title:'Working Capital vs Time',labels:['M0','M1','M2','M3','M4','M5','M6','M7','M8'],d:[100,140,170,155,130,110,90,85,88],mn:60,mx:200,c:'#BA7517',f:'rgba(186,117,23,0.15)',leg:[{c:'#BA7517',l:'Working capital (SAR 000)'}],ins:'Cash is tied up at peak inventory. As Reallocation and Liquidation complete, working capital is released and normalizes.'},
+  {title:'Store Quality vs Assortment Quality',labels:['Super','A','B','C','New','D'],d:[95,78,60,40,18,8],d2:[52,62,72,80,88,93],mn:0,mx:100,c:'#7eb8f7',f:'rgba(126,184,247,0.08)',c2:'#f0a832',f2:'rgba(240,168,50,0.08)',leg:[{c:'#7eb8f7',l:'Store quality (S to D)'},{c:'#f0a832',l:'Assortment quality index'}],ins:'As store cluster quality decreases, assortment quality rises - focus shifts to KVI and A-class items with highest ROS and margin.'},
+  {title:'Sales Growth vs Time',labels:['M0','M1','M2','M3','M4','M5','M6','M7','M8','M9','M10','M11','M12'],d:[100,95,90,88,88,90,95,105,115,128,138,148,155],mn:70,mx:165,c:'#7ab842',f:'rgba(122,184,66,0.15)',leg:[{c:'#7ab842',l:'Sales index (base = 100)'}],ins:'Sales dip slightly during transition, stabilize as the right SKUs land in the right stores, then grow consistently. This is the long-term payoff of the framework.'}
+];
+function showC(i){
+  activeC=i;
+  document.querySelectorAll('.pill').forEach(function(p,j){p.classList.toggle('on',j===i);});
+  var def=cdefs[i];
+  document.getElementById('ctitle').textContent=def.title;
+  document.getElementById('csvg').innerHTML=draw(def);
+  document.getElementById('cleg').innerHTML=def.leg.map(function(l){return '<div class="cleg-i"><div class="cleg-d" style="background:'+l.c+'"></div><span>'+l.l+'</span></div>';}).join('');
+  document.getElementById('cins').textContent=def.ins;
+}
+showC(0);
+</script>
+</body>
+</html>
